@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="robots" content="noindex" />
+  <title>地球阿姨的舊物日常｜開啟官方頁面</title>
+  <meta name="theme-color" content="#f3e6d3" />
+  <style>
+    :root{
+      --bg:#f3e6d3;--card:#f7efe3;--ink:#2f2a25;--muted:#6f665b;--btn:#1f7a4d;--btn-press:#18633e;--border:#e9e9e9;
+      --arrow-top:  calc(4px + env(safe-area-inset-top));
+      --arrow-right: calc(36px + env(safe-area-inset-right));
+      --coach-top:  calc(34px + env(safe-area-inset-top));
+      --coach-right: calc(8px + env(safe-area-inset-right));
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+
+    .wrap{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .card{width:min(720px,94vw);background:var(--card);border-radius:18px;padding:22px 18px 26px;box-shadow:0 8px 22px rgba(0,0,0,.06)}
+    .head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+    .head img{width:44px;height:44px;border-radius:10px;object-fit:cover}
+    .badge{display:inline-block;background:#e7dcc9;border-radius:999px;padding:6px 12px;font-size:14px;margin:10px 0}
+    .tip-box{margin:8px 0 10px;padding:10px 12px;border-radius:10px;background:#eaf6ef;color:#224d36;font-size:14px}
+    h1{font-size:22px;margin:8px 0 12px}
+    p{margin:0 0 12px;color:var(--muted);line-height:1.65}
+    .cta{display:block;width:100%;border:0;border-radius:14px;background:var(--btn);color:#fff;padding:16px 14px;font-size:18px;font-weight:800;text-align:center;text-decoration:none}
+    .cta:active{background:var(--btn-press)}
+    footer{margin-top:10px;color:var(--muted);font-size:13px;text-align:center}
+
+    /* 右上教學泡泡 */
+    .coach-wrap{position:fixed;top:var(--coach-top);right:var(--coach-right);z-index:70;pointer-events:none;display:none;max-width:min(88vw,380px)}
+    .coach-wrap[data-show="1"]{display:block}
+    .coach{pointer-events:auto;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.08);padding:10px 12px}
+    .coach p{margin:0 0 8px;color:#333;font-size:14px;line-height:1.5}
+    .coach .coach-actions{display:flex;justify-content:flex-end}
+    .coach .btn-close{border:0;background:#f2f2f2;border-radius:10px;padding:6px 10px;font-weight:700;font-size:13px}
+
+    /* 紅色箭頭 */
+    .arrow{display:none;position:fixed;
+      top:calc(var(--arrow-top) + 2px);
+      right:calc(var(--arrow-right) + 6px);
+      width:0;height:0;
+      border-top:10px solid transparent;
+      border-bottom:10px solid transparent;
+      border-left:16px solid red;
+      transform:rotate(-45deg);
+      filter:drop-shadow(0 2px 2px rgba(0,0,0,.15));
+      z-index:71;
+    }
+
+    /* 倒數提示 */
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;width:calc(100% - 24px);max-width:720px;background:#111c;backdrop-filter:blur(6px);color:#fff;padding:10px 12px;border-radius:12px;display:none;align-items:center;gap:10px;z-index:80;font-size:14px}
+    .toast.show{display:flex}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main class="card">
+      <div class="head">
+        <img src="logo.png" alt="地球阿姨 LOGO" />
+        <strong>地球阿姨的舊物日常</strong>
+      </div>
+      <span class="badge">舊物新任務</span>
+      <div class="tip-box">📱 若畫面沒有反應，請點右上角 <b>⋯</b> → 選 <b>在瀏覽器中開啟</b></div>
+      <h1>正在為你開啟官方頁面…</h1>
+      <p>用溫柔的方式，讓舊物找到新主人 🍀</p>
+      <a id="cta" class="cta" href="#">前往地球阿姨的頁面🌿</a>
+      <footer>© 地球阿姨的舊物日常｜讓生活更清爽</footer>
+    </main>
+  </div>
+
+  <!-- 右上泡泡與箭頭 -->
+  <div id="arrow" class="arrow"></div>
+  <div id="coachWrap" class="coach-wrap">
+    <div class="coach">
+      <p>請點右上角 <b>⋯</b>，再選 <b>在瀏覽器中開啟</b></p>
+      <div class="coach-actions">
+        <button id="coachClose" class="btn-close">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">🌿 正在開啟 LINE 聊天中，請稍候… <span id="sec">2</span>s</div>
+
+  <script>
+    (function(){
+      const LINE_URL = "https://line.me/ti/p/y6p7-ycLxL";
+      const ref = document.referrer || "";
+      const ua = navigator.userAgent || "";
+      const url = new URL(location.href);
+      const wantsAuto = url.searchParams.get('go') === '1' || /(^|#)go=1(\b|$)/.test(url.hash);
+      const inTikTok = /TikTok|Musical\.ly|BytedanceWebView|aweme/i.test(ua) || /tiktok\.com/i.test(ref);
+
+      const cta = document.getElementById('cta');
+      const toast = document.getElementById('toast');
+      const secEl = document.getElementById('sec');
+      const coachWrap = document.getElementById('coachWrap');
+      const coachClose = document.getElementById('coachClose');
+      const arrowEl = document.getElementById('arrow');
+
+      if (!inTikTok) {
+        const autoOpen = () => {
+          let n = 2;
+          if (wantsAuto) {
+            toast.classList.add('show');
+            secEl.textContent = n;
+            const timer = setInterval(()=>{
+              n -= 1;
+              secEl.textContent = Math.max(n,0);
+              if (n <= 0) { clearInterval(timer); location.href = LINE_URL; }
+            }, 1000);
+          }
+        };
+        if (document.visibilityState === 'visible') requestAnimationFrame(autoOpen);
+        else document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'visible') autoOpen(); }, { once:true });
+
+        cta?.addEventListener('click', e=>{e.preventDefault();location.href=LINE_URL});
+        return;
+      }
+
+      coachWrap.setAttribute('data-show','1');
+      arrowEl.style.display = 'block';
+      coachClose?.addEventListener('click', ()=> coachWrap.removeAttribute('data-show'));
+      cta?.addEventListener('click', e=>{
+        e.preventDefault();
+        const u = new URL(location.href);
+        u.searchParams.set('go','1');
+        location.replace(u.toString());
+      });
+    })();
+  </script>
+</body>
+</html>
